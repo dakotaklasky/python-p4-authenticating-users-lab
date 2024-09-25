@@ -52,6 +52,30 @@ api.add_resource(ClearSession, '/clear')
 api.add_resource(IndexArticle, '/articles')
 api.add_resource(ShowArticle, '/articles/<int:id>')
 
+@app.route('/login', methods = ['POST'])
+def login():
+    if request.method == 'POST':
+        username = request.get_json().get('username')
+        user = User.query.filter(User.username == username).first()
+        session['user_id'] = user.id
+        return user.to_dict(), 200
+
+@app.route('/logout', methods = ['DELETE'])
+def logout():
+    if request.method == 'DELETE':
+        session['user_id'] = None
+        return {}, 204
+
+@app.route('/check_session')
+def check_session():
+    if not session.get('user_id'):
+        return {}, 401
+    else:
+        user_id = session.get('user_id')
+        user = User.query.filter(User.id == user_id).first()
+        return user.to_dict(), 200
+        
+
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
